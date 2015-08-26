@@ -7,8 +7,8 @@
 
 					MIT License (c)2015 MacRat
 
->>> h = Hunyu()
->>> h.parse(''' title: test of hunyu
+>>> h = Funyu()
+>>> h.parse(''' title: test of funyu
 ... author: MacRat
 ...
 ... hello!
@@ -26,7 +26,7 @@
 ... \\t[IMG: image](/path/to/img.png)
 ... ''')
 >>> h.metadata['title']
-'test of hunyu'
+'test of funyu'
 >>> h.metadata['author']
 'MacRat'
 >>> print(h.as_html())
@@ -71,13 +71,13 @@ if sys.version.startswith('3'):
 	unicode = str
 
 
-class HunyuError(Exception):
-	""" hunyu exception base """
+class FunyuError(Exception):
+	""" funyu exception base """
 	pass
 
 
-class HunyuSyntaxError(HunyuError):
-	""" incorrect hunyu syntax error """
+class FunyuSyntaxError(FunyuError):
+	""" incorrect funyu syntax error """
 	pass
 
 
@@ -112,16 +112,16 @@ def indent(string):
 
 
 class Element:
-	""" hunyu element base """
+	""" funyu element base """
 
 	def __init__(self):
 		self.elements = []
 
-	def as_hunyu(self):
-		""" get as hunyu text
+	def as_funyu(self):
+		""" get as funyu text
 		Can't call it is.
 
-		>>> Element().as_hunyu()
+		>>> Element().as_funyu()
 		Traceback (most recent call last):
 			...
 		NotImplementedError
@@ -133,7 +133,7 @@ class Element:
 		""" get as HTML5
 		Can't call it is.
 
-		>>> Element().as_hunyu()
+		>>> Element().as_funyu()
 		Traceback (most recent call last):
 			...
 		NotImplementedError
@@ -191,17 +191,17 @@ class Block(Element):
 				self.elements[-1].feed(line)
 
 
-class Hunyu(Block):
-	""" hunyu parser
+class Funyu(Block):
+	""" funyu parser
 
 	`initial_level` -- top level H tag's number.
 
-	>>> h = Hunyu()
+	>>> h = Funyu()
 	>>> h.feed('title: test')
 	>>> h.feed('')
 	>>> h.feed('this is test.')
 	>>> h.feed('hello, world!')
-	>>> h.as_hunyu()
+	>>> h.as_funyu()
 	'title: test\\n\\nthis is test.\\nhello, world!\\n'
 	>>> h.as_html()
 	'<p>\\nthis is test.<br>\\nhello, world!<br>\\n</p>\\n'
@@ -218,7 +218,7 @@ class Hunyu(Block):
 		""" append line
 		Line can't has line break
 
-		>>> Hunyu().feed('can not include \\n.')
+		>>> Funyu().feed('can not include \\n.')
 		Traceback (most recent call last):
 			...
 		ValueError: line argument can't include line break.
@@ -241,10 +241,10 @@ class Hunyu(Block):
 		for line in string.splitlines():
 			self.feed(line)
 
-	def as_hunyu(self):
+	def as_funyu(self):
 		return '{0}\n{1}'.format(
-			self.metadata.as_hunyu(),
-			''.join(elm.as_hunyu() for elm in self.elements)
+			self.metadata.as_funyu(),
+			''.join(elm.as_funyu() for elm in self.elements)
 		)
 
 	def as_html(self):
@@ -253,7 +253,7 @@ class Hunyu(Block):
 
 class MetaData(Block, dict):
 	""" metadata block
-	First block in the hunyu document is metadata block.
+	First block in the funyu document is metadata block.
 	In this block, you can write metadata about document like a title or author.
 	Metadata is key-value style. Key and value is separated by semicolon.
 
@@ -268,12 +268,12 @@ class MetaData(Block, dict):
 	>>> m.feed("hasn't semicolon is error")
 	Traceback (most recent call last):
 		...
-	HunyuSyntaxError: metadata block expects key-value separated by semicolon.
+	FunyuSyntaxError: metadata block expects key-value separated by semicolon.
 
 	>>> m.feed(': no key is error')
 	Traceback (most recent call last):
 		...
-	HunyuSyntaxError: key is required.
+	FunyuSyntaxError: key is required.
 
 	>>> m.feed('')
 	Traceback (most recent call last):
@@ -298,7 +298,7 @@ class MetaData(Block, dict):
 			raise EndOfBlock()
 
 		if ':' not in line:
-			raise HunyuSyntaxError(
+			raise FunyuSyntaxError(
 				'metadata block expects key-value separated by semicolon.'
 			)
 
@@ -307,11 +307,11 @@ class MetaData(Block, dict):
 		value = ':'.join(items[1:]).strip()
 
 		if key == '':
-			raise HunyuSyntaxError('key is required.')
+			raise FunyuSyntaxError('key is required.')
 
 		self[key] = value
 
-	def as_hunyu(self):
+	def as_funyu(self):
 		return '\n'.join('{0}: {1}'.format(key, self[key]) for key in self) + '\n'
 
 
@@ -321,7 +321,7 @@ class Paragraph(Block):
 	>>> p = Paragraph()
 	>>> p.feed('hello, world!')
 	>>> p.feed('this is test')
-	>>> p.as_hunyu()
+	>>> p.as_funyu()
 	'hello, world!\\nthis is test\\n'
 	>>> p.as_html()
 	'<p>\\nhello, world!<br>\\nthis is test<br>\\n</p>\\n'
@@ -346,8 +346,8 @@ class Paragraph(Block):
 		else:
 			self.elements.append(Line(line))
 
-	def as_hunyu(self):
-		return ''.join(line.as_hunyu() for line in self.elements)
+	def as_funyu(self):
+		return ''.join(line.as_funyu() for line in self.elements)
 
 	def as_html(self):
 		return '<p>\n{0}</p>\n'.format(
@@ -360,7 +360,7 @@ class Section(Block):
 
 	>>> s = Section(2, 'test section')
 	>>> s.feed('\\tthis is test')
-	>>> s.as_hunyu()
+	>>> s.as_funyu()
 	'-- test section\\n\\tthis is test\\n'
 	>>> print(s.as_html())
 	<section>
@@ -396,10 +396,10 @@ class Section(Block):
 		else:
 			Block.feed(self, line[1:])
 
-	def as_hunyu(self):
+	def as_funyu(self):
 		return '-- {0}\n{1}'.format(
 			self.title,
-			indent(''.join(elm.as_hunyu() for elm in self.elements))
+			indent(''.join(elm.as_funyu() for elm in self.elements))
 		).replace('\n\t\n', '\n\n')
 
 	def as_html(self):
@@ -417,7 +417,7 @@ class PostScript(Block):
 	>>> p = PostScript(1, time)
 	>>> p.feed('\\thello, world')
 	>>> p.feed('\\tthis is test')
-	>>> p.as_hunyu()
+	>>> p.as_funyu()
 	'p.s. 2015-01-01\\n\\thello, world\\n\\tthis is test\\n'
 	>>> print(p.as_html())
 	<ins>
@@ -440,7 +440,7 @@ class PostScript(Block):
 	... 	print(repr(e.remain))
 	'\\tafter end'
 
-	>>> h = Hunyu()
+	>>> h = Funyu()
 	>>> h.parse('''
 	... p.s. 2015-04-01
 	... \\tthis is test.
@@ -468,10 +468,10 @@ class PostScript(Block):
 		else:
 			Block.feed(self, line[1:])
 
-	def as_hunyu(self):
+	def as_funyu(self):
 		return 'p.s. {0}\n{1}'.format(
 			self.date.isoformat(),
-			indent(''.join(elm.as_hunyu() for elm in self.elements))
+			indent(''.join(elm.as_funyu() for elm in self.elements))
 		)
 
 	def as_html(self):
@@ -487,14 +487,14 @@ class CodeBlock(Block):
 	>>> c = CodeBlock('html')
 	>>> c.feed('\\thello')
 	>>> c.feed('\\tworld')
-	>>> c.as_hunyu()
+	>>> c.as_funyu()
 	'``` html\\n\\thello\\n\\tworld\\n```\\n'
 	>>> c.as_html()
 	'<pre class="code code_html">\\nhello\\nworld\\n</pre>\\n'
 
 	>>> c = CodeBlock()
 	>>> c.feed('\\ttest')
-	>>> c.as_hunyu()
+	>>> c.as_funyu()
 	'```\\n\\ttest\\n```\\n'
 	>>> c.as_html()
 	'<pre class="code">\\ntest\\n</pre>\\n'
@@ -502,7 +502,7 @@ class CodeBlock(Block):
 	>>> c.feed("hasn't tab character is error.")
 	Traceback (most recent call last):
 		...
-	HunyuSyntaxError: in code block, lines should be starts with tab character.
+	FunyuSyntaxError: in code block, lines should be starts with tab character.
 
 	>>> c.feed('```')
 	Traceback (most recent call last):
@@ -514,7 +514,7 @@ class CodeBlock(Block):
 	... 	print(repr(e.remain))
 	'\\tafter end'
 
-	>>> h = Hunyu()
+	>>> h = Funyu()
 	>>> h.parse('''
 	... ``` html
 	... \\tthis is <b>html</b> source code.
@@ -542,7 +542,7 @@ class CodeBlock(Block):
 			self.ended = True
 			raise EndOfBlock()
 		elif line != '' and not line.startswith('\t'):
-			raise HunyuSyntaxError(
+			raise FunyuSyntaxError(
 				'in code block, lines should be starts with tab character.'
 			)
 		else:
@@ -553,7 +553,7 @@ class CodeBlock(Block):
 
 			self.elements.append(line)
 
-	def as_hunyu(self):
+	def as_funyu(self):
 		if self.type is not None:
 			type = ' ' + self.type
 		else:
@@ -577,14 +577,14 @@ class CodeBlock(Block):
 class EmbeddedHTML(Block):
 	""" embeded HTML block
 	String that surrounded three brackets is "embedded html".
-	In embedded html, all hunyu elements disregarded.
+	In embedded html, all funyu elements disregarded.
 	If you wants use html tag like table or script, please use embedded html.
 
 	>>> e = EmbeddedHTML()
 	>>> e.feed('\\t<script>')
 	>>> e.feed('\\talert("hello, [[world]]");')
 	>>> e.feed('\\t</script>')
-	>>> e.as_hunyu()
+	>>> e.as_funyu()
 	'(((\\n\\t<script>\\n\\talert("hello, [[world]]");\\n\\t</script>\\n)))\\n'
 	>>> e.as_html()
 	'<script>\\nalert("hello, [[world]]");\\n</script>\\n'
@@ -592,7 +592,7 @@ class EmbeddedHTML(Block):
 	>>> e.feed("hasn't tab character is error.")
 	Traceback (most recent call last):
 		...
-	HunyuSyntaxError: in embedded html, lines should be starts with tab character.
+	FunyuSyntaxError: in embedded html, lines should be starts with tab character.
 
 	>>> e.feed(')))')
 	Traceback (most recent call last):
@@ -604,7 +604,7 @@ class EmbeddedHTML(Block):
 	... 	print(repr(e.remain))
 	'\\tafter end'
 
-	>>> h = Hunyu()
+	>>> h = Funyu()
 	>>> h.parse('''
 	... (((
 	... \\tthis is embedded html.
@@ -629,13 +629,13 @@ class EmbeddedHTML(Block):
 			self.ended = True
 			raise EndOfBlock()
 		elif line != '' and not line.startswith('\t'):
-			raise HunyuSyntaxError(
+			raise FunyuSyntaxError(
 				'in embedded html, lines should be starts with tab character.'
 			)
 		else:
 			self.elements.append(line[1:])
 
-	def as_hunyu(self):
+	def as_funyu(self):
 		return '(((\n{0}\n)))\n'.format(indent('\n'.join(self.elements)))
 
 	def as_html(self):
@@ -646,7 +646,7 @@ class String(Element):
 	""" string base
 
 	>>> p = String('this is test')
-	>>> p.as_hunyu()
+	>>> p.as_funyu()
 	'this is test'
 	>>> p.as_html()
 	'this is test'
@@ -691,9 +691,9 @@ class String(Element):
 
 		self.elements.append(string[done:])
 
-	def as_hunyu(self):
+	def as_funyu(self):
 		return ''.join(
-			elm.as_hunyu() if isinstance(elm, Element) else elm
+			elm.as_funyu() if isinstance(elm, Element) else elm
 			for elm in self.elements
 		)
 
@@ -708,14 +708,14 @@ class Line(String):
 	""" one line string
 
 	>>> l = Line('this is test')
-	>>> l.as_hunyu()
+	>>> l.as_funyu()
 	'this is test\\n'
 	>>> l.as_html()
 	'this is test<br>\\n'
 	"""
 
-	def as_hunyu(self):
-		return '{0}\n'.format(String.as_hunyu(self))
+	def as_funyu(self):
+		return '{0}\n'.format(String.as_funyu(self))
 
 	def as_html(self):
 		return '{0}<br>\n'.format(String.as_html(self))
@@ -725,14 +725,14 @@ class Keyword(String):
 	""" keyword element
 
 	>>> k = Keyword('this is test')
-	>>> k.as_hunyu()
+	>>> k.as_funyu()
 	'[[this is test]]'
 	>>> k.as_html()
 	'<strong>this is test</strong>'
 	"""
 
-	def as_hunyu(self):
-		return '[[{0}]]'.format(String.as_hunyu(self))
+	def as_funyu(self):
+		return '[[{0}]]'.format(String.as_funyu(self))
 
 	def as_html(self):
 		return '<strong>{0}</strong>'.format(String.as_html(self))
@@ -742,14 +742,14 @@ class Emphasis(String):
 	""" emphasis element
 
 	>>> e = Emphasis('this is test')
-	>>> e.as_hunyu()
+	>>> e.as_funyu()
 	'<<this is test>>'
 	>>> e.as_html()
 	'<em>this is test</em>'
 	"""
 
-	def as_hunyu(self):
-		return '<<{0}>>'.format(String.as_hunyu(self))
+	def as_funyu(self):
+		return '<<{0}>>'.format(String.as_funyu(self))
 
 	def as_html(self):
 		return '<em>{0}</em>'.format(String.as_html(self))
@@ -759,7 +759,7 @@ class Code(String):
 	""" inline code element
 
 	>>> c = Code('this is test')
-	>>> c.as_hunyu()
+	>>> c.as_funyu()
 	'{{this is test}}'
 	>>> c.as_html()
 	'<code>this is test</code>'
@@ -769,7 +769,7 @@ class Code(String):
 		String.__init__(self, '')
 		self.text = text
 
-	def as_hunyu(self):
+	def as_funyu(self):
 		return '{{{{{0}}}}}'.format(self.text)
 
 	def as_html(self):
@@ -780,13 +780,13 @@ class Link(String):
 	""" link element
 
 	>>> l = Link('test', './test.html')
-	>>> l.as_hunyu()
+	>>> l.as_funyu()
 	'[test](./test.html)'
 	>>> l.as_html()
 	'<a href="./test.html">test</a>'
 
 	>>> l = Link('blog', 'http://blanktar.jp/blog/')
-	>>> l.as_hunyu()
+	>>> l.as_funyu()
 	'[blog](http://blanktar.jp/blog/)'
 	>>> l.as_html()
 	'<a href="http://blanktar.jp/blog/" target="_blank">blog</a>'
@@ -796,30 +796,30 @@ class Link(String):
 		String.__init__(self, text)
 		self.uri = uri
 
-	def as_hunyu(self):
-		return '[{0}]({1})'.format(String.as_hunyu(self), self.uri)
+	def as_funyu(self):
+		return '[{0}]({1})'.format(String.as_funyu(self), self.uri)
 
 	def as_html(self):
 		if urlparse.urlparse(self.uri).scheme:
 			return '<a href="{0}" target="_blank">{1}</a>'.format(
 				self.uri,
-				String.as_hunyu(self)
+				String.as_funyu(self)
 			)
 		else:
-			return '<a href="{0}">{1}</a>'.format(self.uri, String.as_hunyu(self))
+			return '<a href="{0}">{1}</a>'.format(self.uri, String.as_funyu(self))
 
 
 class ImageLink(Link):
 	""" image link element
 
 	>>> l = ImageLink('test', 'test.png')
-	>>> l.as_hunyu() == '[IMG: test](test.png)'
+	>>> l.as_funyu() == '[IMG: test](test.png)'
 	True
 	>>> l.as_html() == '<a href="test.png"><img src="test.png" alt="test"></a>'
 	True
 
 	>>> l = ImageLink('test', 'http://blanktar.jp/test.png')
-	>>> l.as_hunyu() == '[IMG: test](http://blanktar.jp/test.png)'
+	>>> l.as_funyu() == '[IMG: test](http://blanktar.jp/test.png)'
 	True
 	>>> l.as_html() == (
 	... 	'<a href="http://blanktar.jp/test.png" target="_blank">'
@@ -833,7 +833,7 @@ class ImageLink(Link):
 		Link.__init__(self, '', uri)
 		self.alt = alt
 
-	def as_hunyu(self):
+	def as_funyu(self):
 		return '[IMG: {0}]({1})'.format(self.alt, self.uri)
 
 	def as_html(self):

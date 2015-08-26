@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo pep8 && pep8 --ignore=W191 hunyu.py && echo pyflakes && pyflakes hunyu.py
-echo python3 && python3 hunyu.py && echo python2 && python2 hunyu.py
+echo pep8 && pep8 --ignore=W191 funyu.py && echo pyflakes && pyflakes funyu.py
+echo python3 && python3 funyu.py && echo python2 && python2 funyu.py
 echo coverage
-coverage run hunyu.py && coverage html hunyu.py && google-chrome-stable htmlcov/hunyu.html
+coverage run funyu.py && coverage html funyu.py && google-chrome-stable htmlcov/funyu.html
