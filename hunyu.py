@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#coding: utf-8
+# coding: utf-8
 
 """ Blog writing markup language for BlankTar
 
@@ -67,9 +67,8 @@ except ImportError:
 	import urlparse
 
 
-if sys.version.startswith('2'):
-	bytes = str
-	str = unicode
+if sys.version.startswith('3'):
+	unicode = str
 
 
 class HunyuError(Exception):
@@ -91,6 +90,12 @@ class EndOfBlock(Exception):
 
 	def __init__(self, remain=None):
 		self.remain = remain
+
+	def __str__(self):
+		if self.remain:
+			return self.remain
+		else:
+			return ''
 
 
 def indent(string):
@@ -144,7 +149,7 @@ class Block(Element):
 		assert isinstance(level, int)
 		assert 1 <= level
 
-		super().__init__()
+		Element.__init__(self)
 		self.ended = False
 		self.level = level
 
@@ -205,7 +210,7 @@ class Hunyu(Block):
 	"""
 
 	def __init__(self, initial_level=1):
-		super().__init__(1)
+		Block.__init__(self, 1)
 		self.level = initial_level - 1
 		self.metadata = MetaData()
 
@@ -281,10 +286,10 @@ class MetaData(Block, dict):
 	"""
 
 	def __init__(self):
-		super().__init__(1)
+		Block.__init__(self, 1)
 
 	def feed(self, line):
-		assert isinstance(line, str)
+		assert isinstance(line, (str, unicode))
 
 		if self.ended:
 			raise EndOfBlock(line)
@@ -332,7 +337,7 @@ class Paragraph(Block):
 	"""
 
 	def __init__(self):
-		super().__init__(1)
+		Block.__init__(self, 1)
 
 	def feed(self, line):
 		if line.strip() == '' or self.ended:
@@ -379,9 +384,9 @@ class Section(Block):
 	"""
 
 	def __init__(self, level, title):
-		assert isinstance(title, str)
+		assert isinstance(title, (str, unicode))
 
-		super().__init__(level)
+		Block.__init__(self, level)
 		self.title = title
 
 	def feed(self, line):
@@ -453,7 +458,7 @@ class PostScript(Block):
 	def __init__(self, level, date):
 		assert isinstance(date, datetime.date)
 
-		super().__init__(level)
+		Block.__init__(self, level)
 		self.date = date
 
 	def feed(self, line):
@@ -523,13 +528,13 @@ class CodeBlock(Block):
 	"""
 
 	def __init__(self, type=None):
-		assert type is None or isinstance(type, str)
+		assert type is None or isinstance(type, (str, unicode))
 
-		super().__init__(1)
+		Block.__init__(self, 1)
 		self.type = type
 
 	def feed(self, line):
-		assert isinstance(line, str)
+		assert isinstance(line, (str, unicode))
 
 		if self.ended:
 			raise EndOfBlock(line)
@@ -613,10 +618,10 @@ class EmbeddedHTML(Block):
 	"""
 
 	def __init__(self):
-		super().__init__(1)
+		Block.__init__(self, 1)
 
 	def feed(self, line):
-		assert isinstance(line, str)
+		assert isinstance(line, (str, unicode))
 
 		if self.ended:
 			raise EndOfBlock(line)
@@ -658,9 +663,9 @@ class String(Element):
 	)
 
 	def __init__(self, string):
-		assert isinstance(string, str)
+		assert isinstance(string, (str, unicode))
 
-		super().__init__()
+		Element.__init__(self)
 
 		done = 0
 		for match in self.splitter.finditer(string):
@@ -710,10 +715,10 @@ class Line(String):
 	"""
 
 	def as_hunyu(self):
-		return '{0}\n'.format(super().as_hunyu())
+		return '{0}\n'.format(String.as_hunyu(self))
 
 	def as_html(self):
-		return '{0}<br>\n'.format(super().as_html())
+		return '{0}<br>\n'.format(String.as_html(self))
 
 
 class Keyword(String):
@@ -727,10 +732,10 @@ class Keyword(String):
 	"""
 
 	def as_hunyu(self):
-		return '[[{0}]]'.format(super().as_hunyu())
+		return '[[{0}]]'.format(String.as_hunyu(self))
 
 	def as_html(self):
-		return '<strong>{0}</strong>'.format(super().as_html())
+		return '<strong>{0}</strong>'.format(String.as_html(self))
 
 
 class Emphasis(String):
@@ -744,10 +749,10 @@ class Emphasis(String):
 	"""
 
 	def as_hunyu(self):
-		return '<<{0}>>'.format(super().as_hunyu())
+		return '<<{0}>>'.format(String.as_hunyu(self))
 
 	def as_html(self):
-		return '<em>{0}</em>'.format(super().as_html())
+		return '<em>{0}</em>'.format(String.as_html(self))
 
 
 class Code(String):
@@ -761,7 +766,7 @@ class Code(String):
 	"""
 
 	def __init__(self, text):
-		super().__init__('')
+		String.__init__(self, '')
 		self.text = text
 
 	def as_hunyu(self):
@@ -788,20 +793,20 @@ class Link(String):
 	"""
 
 	def __init__(self, text, uri):
-		super().__init__(text)
+		String.__init__(self, text)
 		self.uri = uri
 
 	def as_hunyu(self):
-		return '[{0}]({1})'.format(super().as_hunyu(), self.uri)
+		return '[{0}]({1})'.format(String.as_hunyu(self), self.uri)
 
 	def as_html(self):
 		if urlparse.urlparse(self.uri).scheme:
 			return '<a href="{0}" target="_blank">{1}</a>'.format(
 				self.uri,
-				super().as_hunyu()
+				String.as_hunyu(self)
 			)
 		else:
-			return '<a href="{0}">{1}</a>'.format(self.uri, super().as_hunyu())
+			return '<a href="{0}">{1}</a>'.format(self.uri, String.as_hunyu(self))
 
 
 class ImageLink(Link):
@@ -825,7 +830,7 @@ class ImageLink(Link):
 	"""
 
 	def __init__(self, alt, uri):
-		super().__init__('', uri)
+		Link.__init__(self, '', uri)
 		self.alt = alt
 
 	def as_hunyu(self):
