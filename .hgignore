@@ -1,3 +1,4 @@
 syntax: glob
 .coverage
 htmlcov/
+__pycache__/
