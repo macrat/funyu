@@ -1,0 +1,217 @@
+title: Reference of funyu
+author: MacRat <macrater@gmail.com>
+
+-- About funyu
+	funyu wants easy for read and write.
+	funyu emphasize simplicity than scalability.
+	(But, this project is my try of test-driven development. sometimes I will try experimental writing.)
+
+	funyu can separate two elements that <<block element>> and <<inline element>>. Like the HTML elements.
+
+-- Block element
+	Block element is base of funyu. It is defined document struct.
+
+	-- Paragraph
+		Paragraph is defined group of lines.
+		Paragraph style same as the markdown. But, funyu's paragraph doesn't remove line break.
+		Paragraph is separated other block element with blank line.
+
+		Like this.
+		``` funyu
+			This is first paragraph.
+			This is same paragraph too.
+
+			Here is second paragraph.
+		```
+
+		Convert to this.
+		``` HTML
+			<p>
+			This is first paragraph<br>
+			This is same paragraph too.<br>
+			</p>
+			<p>
+			Here is second paragraph.<br>
+			</p>
+		```
+
+	-- Metadata
+		Metadata is first paragraph of funyu document. It is defined information about document.
+		Information is key-value style. Key and value is separated by semicolon.
+		funyu doesn't content of key and value. those can define free.
+		Metadata doesn't affect to output HTML document.
+
+		This reference's metadata is this.
+		``` funyu
+			title: Reference of funyu
+			author: MacRat <macrater@gmail.com>
+		```
+
+	-- Section
+		Section is defined section. Its meaning is just same as HTML5's section.
+		Section has title and content.
+		First line is started with two hypen and one space, and title. After, write content with one indent.
+
+		In section, you can use other block elements.
+
+		Like this.
+		``` funyu
+			-- This is title
+				This is content of section.
+		```
+
+		Convert to this.
+		``` HTML
+			<section>
+			<h1>This is title</h1>
+			<p>
+			This is content of section<br>
+			</p>
+			</section>
+		```
+
+	-- PostScript
+		PostScript is defined post script.
+		PostScript has posted date and content.
+		First line is started with {{p.s. }} and posted date. After, write content with one indent like section.
+
+		In post script, you can use other block elements.
+
+		``` funyu
+			p.s. 2015-01-01 This is content of post script.
+		```
+		This PostScript was written in 2015-01-01.
+
+		Convert to this.
+		``` HTML
+			<ins>
+			<b>p.s. <date>2015-01-01</date></b>
+			<p>
+			This is content of post script.<br>
+			</p>
+			</ins>
+		```
+
+	-- CodeBlock
+		CodeBlock is defined program source code.
+		CodeBlock style is same as GitHub's markdown.
+
+		In CodeBlock, all funyu elements and HTML tags is disregarded.
+
+		This program is python's hello world.
+		First line is started with triple back quote and one space, and program type. Can you omitting program type.
+		Last line is triple back quote.
+		``` funyu
+			``` python
+				print('hello, world!')
+			```
+		```
+
+		Convert to this.
+		``` HTML
+			<pre class="code code_python">
+				print('hello, world!')
+			</pre>
+		```
+
+		Program type maybe use for syntax highlight. But funyu hasn't syntax highlight function.
+
+	-- EmbeddedHTML
+		In EmbeddedHTML, all funyu elements is disregarded.
+		If you wants use html tag like table or script, please use embedded html.
+		First line and last line of EmbeddedHTML is only triple brackets.
+
+		Like this.
+		``` funyu
+			(((
+				This is <b>embedded html</b>.
+				Can't use <<funyu elements>>.
+			)))
+		```
+
+		Convert to this.
+		``` HTML
+			This is <b>embedded html</b>.
+			Can't use <<funyu elements>>.
+		```
+
+-- Inline element
+	Inline element is used for define meaning.
+
+	-- Keyword
+		Keyword is important word in the document. Its meaning is just same as HTML5's string tag.
+		Keyword is starts with {{[[}}, and ends with {{]]}}.
+		Keyword can including other inline element.
+
+		``` funyu
+			this is [[important]]
+		```
+
+		Convert to this.
+		``` HTML
+			this is <strong>important</strong>
+		```
+
+	-- Emphasis
+		Emphasis isn't important word but need distinguish other words.
+		Emphasis can including other inline element.
+
+		``` funyu
+			this is <<emphasis>>
+		```
+
+		Convert to this.
+		``` HTML
+			this is <em>emphasis</em>
+		```
+
+	-- Code
+		Code is inline program code.
+
+		Like this.
+		``` funyu
+			this is {{code}}
+		```
+
+		Convert to this.
+		``` HTML
+			this is <code>code</code>
+		```
+
+	-- Link
+		Link is link.
+		This syntax is just same as markdown's link.
+
+		Like this.
+		``` funyu
+			[text](URI)
+		```
+
+		Convert to this.
+		``` HTML
+			<a href="URI">text</a>
+		```
+
+		Add {{target="_blank"}} if linked out of domain. (Exactly, it when uri is started with protocol name.)
+		``` funyu
+			[blanktar](http://blanktar.jp/)
+		```
+
+		Convert to this.
+		``` HTML
+			<a href="http://blanktar.jp/" target="_blank">blanktar</a>
+		```
+
+		-- ImageLink
+			Link can linking to image. if used ImageLink, funyu will insert img tag.
+			ImageLink syntax is insert {{IMG:}} into text of normal link. Text will use as alternative text.
+
+			Like this.
+			``` funyu
+				[IMG: alt](URI)
+			```
+
+			Convert to this.
+			``` HTML
+				<a href="URI"><img src="URI" alt="alt"></a>
+			```
