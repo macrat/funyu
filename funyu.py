@@ -653,13 +653,13 @@ class String(Element):
 	"""
 
 	splitter = re.compile(
-		'\[\[(?P<keyword>.*)\]\]'
+		'\[\[(?P<keyword>.*?)\]\]'
 		'|'
-		'<<(?P<emphasis>.*)>>'
+		'<<(?P<emphasis>.*?)>>'
 		'|'
-		'{{(?P<code>.*)}}'
+		'{{(?P<code>.*?)}}'
 		'|'
-		'\[(?P<linktype>IMG:|)(?P<linktext>.*)\]\((?P<linkuri>.*)\)'
+		'\[(?P<linktype>IMG:|)(?P<linktext>.*?)\]\((?P<linkuri>.*?)\)'
 	)
 
 	def __init__(self, string):
