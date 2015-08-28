@@ -226,10 +226,10 @@ class Funyu(Block):
 	'test'
 
 	>>> h = Funyu()
-	>>> h.feed('invalid syntax')
+	>>> h.feed(':invalid syntax')
 	Traceback (most recent call last):
 		...
-	FunyuSyntaxError: line 1: metadata block expects key-value separated by semicolon.
+	FunyuSyntaxError: line 1: key is required.
 	"""
 
 	def __init__(self, initial_level=1):
