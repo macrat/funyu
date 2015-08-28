@@ -924,5 +924,55 @@ class ImageLink(Link):
 
 
 if __name__ == '__main__':
-	import doctest
-	doctest.testmod()
+	import argparse
+	import sys
+	import json
+
+	parser = argparse.ArgumentParser(description='funyu parser.')
+	parser.add_argument(
+		'-t', '--test',
+		action='store_true', default=False,
+		help='test source code.'
+	)
+
+	parser.add_argument(
+		'file',
+		nargs='?',
+		type=argparse.FileType('r'), default=sys.stdin,
+		help='source file. default is stdin.'
+	)
+	parser.add_argument(
+		'-b', '--body',
+		dest='mode', action='store_const', const='body', default='body',
+		help="get HTML's body. It is default."
+	)
+	parser.add_argument(
+		'-m', '--meta',
+		dest='mode', action='store_const', const='meta',
+		help='get metadata paragraph.'
+	)
+	parser.add_argument(
+		'-j', '--json',
+		dest='mode', action='store_const', const='json',
+		help='get metadata as json.'
+	)
+
+	args = parser.parse_args()
+
+	if args.test:
+		import doctest
+		if doctest.testmod(verbose=True).failed == 0:
+			sys.exit(0)
+		else:
+			sys.exit(1)
+	else:
+		f = Funyu()
+
+		f.parse(args.file.read())
+
+		if args.mode == 'body':
+			print(f.as_html())
+		elif args.mode == 'meta':
+			print(f.metadata.as_funyu().strip())
+		elif args.mode == 'json':
+			print(json.dumps(f.metadata))

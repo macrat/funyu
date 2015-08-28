@@ -14,7 +14,32 @@ python2.7 or later, or python3.x.
 
 ## How to use?
 ### From console
-Not yet implemented.
+Convert from stdin.
+``` shell
+	$ python funyu.py <<EOF
+	title: test
+
+	this is test of [[funyu]].
+	EOF
+	<p>
+	this is test of <strong>funyu</strong>.<br>
+	</p>
+```
+
+Get metadata as json.
+```
+	$ python funyu.py -j <<EOF
+	title: test
+
+	this is test of [[funyu]].
+	EOF
+	{title: "test"}
+```
+
+Convert from file that named "test.fny".
+``` shell
+	$ python funyu.py test.fny
+```
 
 ### From python
 Import funyu.py and instantiation Funyu class.
@@ -32,7 +57,7 @@ Can you get parsed document as HTML5 or funyu.
 ```
 	>>> print(f.as_html())
 	<p>
-	this is test of <strong>funyu</strong><br>
+	this is test of <strong>funyu</strong>.<br>
 	</p>
 
 	>>> print(f.as_funyu())
