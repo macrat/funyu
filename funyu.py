@@ -150,13 +150,13 @@ class Element:
 		""" get as HTML5
 		Can't call it is.
 
-		>>> Element().as_funyu()
+		>>> Element().as_html()
 		Traceback (most recent call last):
 			...
 		NotImplementedError
+		"""
 
 		raise NotImplementedError()
-		"""
 
 
 class Block(Element):
