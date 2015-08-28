@@ -686,10 +686,15 @@ class String(Element):
 	>>> p.as_html()
 	'<a href="test"><strong>this</strong> is <strong>link</strong></a>'
 
-	>>> p = String('[[opend')
+	>>> String('[[opend')
 	Traceback (most recent call last):
 		...
 	FunyuSyntaxError: inline element is required close bracket.
+
+	>>> String('[link in [link](uri)](uri)')
+	Traceback (most recent call last):
+		...
+	FunyuSyntaxError: link element can't including link.
 	"""
 
 	link = re.compile(
@@ -753,6 +758,9 @@ class String(Element):
 				link = ImageLink
 			else:
 				link = Link
+
+			if self.link.search(match.group('linktext')):
+				raise FunyuSyntaxError("link element can't including link.")
 
 			self.elements.append(link(
 				match.group('linktext').strip(),

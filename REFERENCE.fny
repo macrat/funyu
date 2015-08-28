@@ -192,6 +192,8 @@ author: MacRat <macrater@gmail.com>
 			<a href="URI">text</a>
 		```
 
+		In text, you can use other inline elements except Link or ImageLink.
+
 		Add {{target="_blank"}} if linked out of domain. (Exactly, it when uri is started with protocol name.)
 		``` funyu
 			[blanktar](http://blanktar.jp/)
