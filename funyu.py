@@ -645,51 +645,90 @@ class EmbeddedHTML(Block):
 class String(Element):
 	""" string base
 
-	>>> p = String('this is test')
+	>>> p = String('<<[[this]] <<is>> [[test]]>>')
 	>>> p.as_funyu()
-	'this is test'
+	'<<[[this]] <<is>> [[test]]>>'
 	>>> p.as_html()
-	'this is test'
+	'<em><strong>this</strong> <em>is</em> <strong>test</strong></em>'
+
+	>>> p = String('[[[this]] is [[link]]](test)')
+	>>> p.as_html()
+	'<a href="test"><strong>this</strong> is <strong>link</strong></a>'
+
+	>>> p = String('[[opend')
+	Traceback (most recent call last):
+		...
+	FunyuSyntaxError: inline element is required close bracket.
 	"""
 
-	splitter = re.compile(
-		'\[\[(?P<keyword>.*?)\]\]'
-		'|'
-		'<<(?P<emphasis>.*?)>>'
-		'|'
-		'{{(?P<code>.*?)}}'
-		'|'
-		'\[(?P<linktype>IMG:|)(?P<linktext>.*?)\]\((?P<linkuri>.*?)\)'
+	link = re.compile(
+		'\[(?P<linktype>IMG:|)(?P<linktext>.*)\]\((?P<linkuri>.*)\)'
 	)
 
 	def __init__(self, string):
 		assert isinstance(string, (str, unicode))
 
+		def findClose(string, start, end):
+			level = 0
+			for i in range(len(string)):
+				if string[i:].startswith(start):
+					level += 1
+				elif string[i:].startswith(end):
+					level -= 1
+
+				if level == -1:
+					return i
+
+			raise FunyuSyntaxError('inline element is required close bracket.')
+
+		def procStr(string):
+			i = 0
+			last = 0
+			while i < len(string):
+				key = string[i:i + 2]
+
+				if key in ('[[', '<<', '{{'):
+					self.elements.append(string[last:i])
+
+					i += 2
+
+					if key == '[[':
+						end = i + findClose(string[i:], '[[', ']]')
+						self.elements.append(Keyword(string[i:end]))
+					elif key == '<<':
+						end = i + findClose(string[i:], '<<', '>>')
+						self.elements.append(Emphasis(string[i:end]))
+					elif key == '{{':
+						end = i + findClose(string[i:], '{{', '}}')
+						self.elements.append(Code(string[i:end]))
+
+					i = end + 2
+					last = i
+
+				i += 1
+
+			remain = string[last:]
+			if remain:
+				self.elements.append(remain)
+
 		Element.__init__(self)
 
 		done = 0
-		for match in self.splitter.finditer(string):
-			self.elements.append(string[done:match.start()])
+		for match in self.link.finditer(string):
+			procStr(string[done:match.start()])
 			done = match.end()
 
-			if match.group('keyword') is not None:
-				self.elements.append(Keyword(match.group('keyword')))
-			elif match.group('emphasis') is not None:
-				self.elements.append(Emphasis(match.group('emphasis')))
-			elif match.group('code') is not None:
-				self.elements.append(Code(match.group('code')))
-			elif match.group('linktype') is not None:
-				if match.group('linktype') == 'IMG:':
-					link = ImageLink
-				else:
-					link = Link
+			if match.group('linktype') == 'IMG:':
+				link = ImageLink
+			else:
+				link = Link
 
-				self.elements.append(link(
-					match.group('linktext').strip(),
-					match.group('linkuri').strip())
-				)
+			self.elements.append(link(
+				match.group('linktext').strip(),
+				match.group('linkuri').strip())
+			)
 
-		self.elements.append(string[done:])
+		procStr(string[done:])
 
 	def as_funyu(self):
 		return ''.join(
@@ -803,10 +842,10 @@ class Link(String):
 		if urlparse.urlparse(self.uri).scheme:
 			return '<a href="{0}" target="_blank">{1}</a>'.format(
 				self.uri,
-				String.as_funyu(self)
+				String.as_html(self)
 			)
 		else:
-			return '<a href="{0}">{1}</a>'.format(self.uri, String.as_funyu(self))
+			return '<a href="{0}">{1}</a>'.format(self.uri, String.as_html(self))
 
 
 class ImageLink(Link):
