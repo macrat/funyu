@@ -27,7 +27,7 @@ Convert from stdin.
 ```
 
 Get metadata as json.
-```
+``` shell
 	$ python funyu.py -j <<EOF
 	title: test
 
@@ -44,7 +44,7 @@ Convert from file that named "test.fny".
 ### From python
 Import funyu.py and instantiation Funyu class.
 And, parse your funyu document.
-```
+``` python
 	>>> import funyu
 	>>> f = funyu.Funyu()
 	>>> f.parse('''title: test
@@ -54,7 +54,7 @@ And, parse your funyu document.
 ```
 
 Can you get parsed document as HTML5 or funyu.
-```
+``` python
 	>>> print(f.as_html())
 	<p>
 	this is test of <strong>funyu</strong>.<br>
