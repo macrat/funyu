@@ -77,8 +77,25 @@ class FunyuError(Exception):
 
 
 class FunyuSyntaxError(FunyuError):
-	""" incorrect funyu syntax error """
-	pass
+	""" incorrect funyu syntax error
+
+	>>> e = FunyuSyntaxError('test exception')
+	>>> print(str(e))
+	test exception
+	>>> e.line_number = 5
+	>>> print(str(e))
+	line 5: test exception
+	"""
+
+	def __init__(self, message):
+		self.message = message
+		self.line_number = None
+
+	def __str__(self):
+		if self.line_number is not None:
+			return 'line {0}: {1}'.format(self.line_number, self.message)
+		else:
+			return self.message
 
 
 class EndOfBlock(Exception):
@@ -207,12 +224,19 @@ class Funyu(Block):
 	'<p>\\nthis is test.<br>\\nhello, world!<br>\\n</p>\\n'
 	>>> h.metadata['title']
 	'test'
+
+	>>> h = Funyu()
+	>>> h.feed('invalid syntax')
+	Traceback (most recent call last):
+		...
+	FunyuSyntaxError: line 1: metadata block expects key-value separated by semicolon.
 	"""
 
 	def __init__(self, initial_level=1):
 		Block.__init__(self, 1)
 		self.level = initial_level - 1
 		self.metadata = MetaData()
+		self.line_number = 0
 
 	def feed(self, line):
 		""" append line
@@ -224,16 +248,23 @@ class Funyu(Block):
 		ValueError: line argument can't include line break.
 		"""
 
+		self.line_number += 1
+
 		if '\n' in line:
 			raise ValueError("line argument can't include line break.")
 
-		if self.metadata.ended is True:
-			Block.feed(self, line)
-		else:
-			try:
-				self.metadata.feed(line)
-			except EndOfBlock:
-				return
+		try:
+			if self.metadata.ended is True:
+				Block.feed(self, line)
+			else:
+				try:
+					self.metadata.feed(line)
+				except EndOfBlock:
+					return
+		except FunyuSyntaxError as e:
+			e.line_number = self.line_number
+			e.line_string = line
+			raise e
 
 	def parse(self, string):
 		""" parse multi line string """
