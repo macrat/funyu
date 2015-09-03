@@ -691,6 +691,9 @@ class String(Element):
 		...
 	FunyuSyntaxError: inline element is required close bracket.
 
+	>>> p = String('[link a](url) [link b](uri)')
+	>>> p.as_html()
+	'<a href="url">link a</a> <a href="uri">link b</a>'
 	>>> String('[link in [link](uri)](uri)')
 	Traceback (most recent call last):
 		...
@@ -698,7 +701,10 @@ class String(Element):
 	"""
 
 	link = re.compile(
-		'\[(?P<linktype>IMG:|)(?P<linktext>.*)\]\((?P<linkuri>.*)\)'
+		'\[(?P<linktype>IMG:|)(?P<linktext>.*?)\]\((?P<linkuri>.*?)\)'
+	)
+	nest_link = re.compile(
+		'\[.*?\[.*?\]\(.*?\).*?\]\(.*?\)'
 	)
 
 	def __init__(self, string):
@@ -749,6 +755,9 @@ class String(Element):
 
 		Element.__init__(self)
 
+		if self.nest_link.search(string):
+			raise FunyuSyntaxError("link element can't including link.")
+
 		done = 0
 		for match in self.link.finditer(string):
 			procStr(string[done:match.start()])
@@ -758,9 +767,6 @@ class String(Element):
 				link = ImageLink
 			else:
 				link = Link
-
-			if self.link.search(match.group('linktext')):
-				raise FunyuSyntaxError("link element can't including link.")
 
 			self.elements.append(link(
 				match.group('linktext').strip(),
