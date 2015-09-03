@@ -942,6 +942,12 @@ if __name__ == '__main__':
 	)
 
 	parser.add_argument(
+		'-v', '--verbose',
+		action='store_true', default=False,
+		help='verbose test output. please use with --test.'
+	)
+
+	parser.add_argument(
 		'file',
 		nargs='?',
 		type=argparse.FileType('r'), default=sys.stdin,
@@ -967,11 +973,16 @@ if __name__ == '__main__':
 
 	if args.test:
 		import doctest
-		if doctest.testmod(verbose=True).failed == 0:
+		if doctest.testmod(verbose=args.verbose).failed == 0:
+			print('Test passed.')
 			sys.exit(0)
 		else:
 			sys.exit(1)
 	else:
+		if args.verbose:
+			sys.stderr.write('verbose option is need using with test option.\n')
+			sys.exit(1)
+
 		f = Funyu()
 
 		f.parse(args.file.read())
