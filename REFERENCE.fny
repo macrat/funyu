@@ -8,6 +8,10 @@ author: MacRat <macrater@gmail.com>
 
 	funyu can separate two elements that <<block element>> and <<inline element>>. Like the HTML elements.
 
+	MUST use single hard-tab as indent.
+	If using soft-tab, can't convert by this parser. Will be error.
+	This rule is for parser simplicity.
+
 -- Block element
 	Block element is base of funyu. It is defined document struct.
 
